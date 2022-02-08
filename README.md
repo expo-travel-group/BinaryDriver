@@ -1,3 +1,5 @@
+**This fork supports PHP 8.1** 
+
 # Binary Driver
 
 Binary-Driver is a set of PHP tools to build binary drivers.
