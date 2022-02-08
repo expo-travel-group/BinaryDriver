@@ -2,13 +2,14 @@
 
 namespace Alchemy\Tests\BinaryDriver\Listeners;
 
+use Alchemy\BinaryDriver\Listeners\ListenerInterface;
 use Alchemy\BinaryDriver\Listeners\Listeners;
 use Evenement\EventEmitter;
-use Alchemy\BinaryDriver\Listeners\ListenerInterface;
+use PHPUnit\Framework\TestCase;
 
-class ListenersTest extends \PHPUnit_Framework_TestCase
+class ListenersTest extends TestCase
 {
-    public function testRegister()
+    public function testRegister(): void
     {
         $listener = new MockListener();
 
@@ -37,10 +38,10 @@ class ListenersTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($data, $capturedData);
     }
 
-    public function testRegisterAndForwardThenUnregister()
+    public function testRegisterAndForwardThenUnregister(): void
     {
         $listener = new MockListener();
-        $target = new EventEmitter();
+        $target   = new EventEmitter();
 
         $n = 0;
         $target->on('received', function ($type, $data) use (&$n, &$capturedType, &$capturedData) {
@@ -82,11 +83,11 @@ class MockListener extends EventEmitter implements ListenerInterface
 {
     public function handle($type, $data)
     {
-        $this->emit('received', array($type, $data));
+        $this->emit('received', [$type, $data]);
     }
 
-    public function forwardedEvents()
+    public function forwardedEvents(): array
     {
-        return array('received');
+        return ['received'];
     }
 }

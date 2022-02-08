@@ -2,20 +2,21 @@
 
 namespace Alchemy\BinaryDriver;
 
+use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Process\Process;
 
 /**
  * Convenient PHPUnit methods for testing BinaryDriverInterface implementations.
  */
-class BinaryDriverTestCase extends \PHPUnit_Framework_TestCase
+class BinaryDriverTestCase extends TestCase
 {
     /**
      * @return ProcessBuilderFactoryInterface
      */
     public function createProcessBuilderFactoryMock()
     {
-        return $this->getMock('Alchemy\BinaryDriver\ProcessBuilderFactoryInterface');
+        return $this->createMock('Alchemy\BinaryDriver\ProcessBuilderFactoryInterface');
     }
 
     /**
@@ -25,10 +26,15 @@ class BinaryDriverTestCase extends \PHPUnit_Framework_TestCase
      * @param string  $output      The process output
      * @param string  $error       The process error output
      *
-     * @return Process
      */
-    public function createProcessMock($runs = 1, $success = true, $commandLine = null, $output = null, $error = null, $callback = false)
-    {
+    public function createProcessMock(
+        $runs = 1,
+        $success = true,
+        $commandLine = null,
+        $output = '',
+        $error = '',
+        $callback = false
+    ) {
         $process = $this->getMockBuilder('Symfony\Component\Process\Process')
             ->disableOriginalConstructor()
             ->getMock();
@@ -40,37 +46,34 @@ class BinaryDriverTestCase extends \PHPUnit_Framework_TestCase
             $builder->with($this->isInstanceOf('Closure'));
         }
 
-        $process->expects($this->any())
+        $process
             ->method('isSuccessful')
-            ->will($this->returnValue($success));
+            ->willReturn($success);
 
-        foreach (array(
-            'getOutput' => $output,
-            'getErrorOutput' => $error,
-            'getCommandLine' => $commandLine,
-        ) as $command => $value) {
+        foreach ([
+                     'getOutput'      => $output,
+                     'getErrorOutput' => $error,
+                     'getCommandLine' => $commandLine,
+                 ] as $command => $value) {
             $process
-                ->expects($this->any())
                 ->method($command)
-                ->will($this->returnValue($value));
+                ->willReturn($value);
         }
 
         return $process;
     }
 
     /**
-     * @return LoggerInterface
      */
     public function createLoggerMock()
     {
-        return $this->getMock('Psr\Log\LoggerInterface');
+        return $this->createMock('Psr\Log\LoggerInterface');
     }
 
     /**
-     * @return ConfigurationInterface
      */
     public function createConfigurationMock()
     {
-        return $this->getMock('Alchemy\BinaryDriver\ConfigurationInterface');
+        return $this->createMock('Alchemy\BinaryDriver\ConfigurationInterface');
     }
 }

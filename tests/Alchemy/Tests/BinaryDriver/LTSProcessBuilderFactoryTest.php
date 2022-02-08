@@ -6,7 +6,7 @@ use Alchemy\BinaryDriver\ProcessBuilderFactory;
 
 class LTSProcessBuilderFactoryTest extends AbstractProcessBuilderFactoryTest
 {
-    public function setUp()
+    protected function setUp(): void
     {
         if (!class_exists('Symfony\Component\Process\ProcessBuilder')) {
             $this->markTestSkipped('ProcessBuilder is not available.');

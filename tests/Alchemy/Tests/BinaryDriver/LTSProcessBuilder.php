@@ -2,12 +2,10 @@
 
 namespace Alchemy\Tests\BinaryDriver;
 
-use Alchemy\BinaryDriver\ProcessBuilderFactory;
 use LogicException;
 use Symfony\Component\Process\Process;
-use Symfony\Component\Process\ProcessBuilder;
 
-class LTSProcessBuilder extends ProcessBuilder
+class LTSProcessBuilder extends Process
 {
     private $arguments;
     private $prefix;
@@ -33,7 +31,7 @@ class LTSProcessBuilder extends ProcessBuilder
         return $this;
     }
 
-    public function setTimeout($timeout)
+    public function setTimeout($timeout): static
     {
         $this->timeout = $timeout;
 
@@ -47,7 +45,7 @@ class LTSProcessBuilder extends ProcessBuilder
         }
 
         $args = $this->prefix ? array_merge(array($this->prefix), $this->arguments) : $this->arguments;
-        $script = implode(' ', array_map('escapeshellarg', $args));
+        $script = array_map('escapeshellarg', $args);
 
         return new Process($script, null, null, null, $this->timeout);
     }

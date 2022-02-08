@@ -33,14 +33,10 @@ class ProcessRunner implements ProcessRunnerInterface
 
     /**
      * {@inheritdoc}
-     *
-     * @return ProcessRunner
      */
-    public function setLogger(LoggerInterface $logger)
+    public function setLogger(LoggerInterface $logger): void
     {
         $this->logger = $logger;
-
-        return $this;
     }
 
     /**
@@ -99,6 +95,6 @@ class ProcessRunner implements ProcessRunnerInterface
         ));
         throw new ExecutionFailureException(sprintf(
             '%s failed to execute command %s', $this->name, $command
-        ), $e ? $e->getCode() : null, $e ?: null);
+        ), $e ? $e->getCode() : 0, $e ?: null);
     }
 }

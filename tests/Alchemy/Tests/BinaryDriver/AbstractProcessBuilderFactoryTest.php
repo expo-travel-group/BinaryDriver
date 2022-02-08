@@ -2,10 +2,11 @@
 
 namespace Alchemy\Tests\BinaryDriver;
 
+use PHPUnit\Framework\TestCase;
 use Symfony\Component\Process\ExecutableFinder;
 use Alchemy\BinaryDriver\ProcessBuilderFactory;
 
-abstract class AbstractProcessBuilderFactoryTest extends \PHPUnit_Framework_TestCase
+abstract class AbstractProcessBuilderFactoryTest extends TestCase
 {
     public static $phpBinary;
 
@@ -15,7 +16,7 @@ abstract class AbstractProcessBuilderFactoryTest extends \PHPUnit_Framework_Test
      */
     abstract protected function getProcessBuilderFactory($binary);
 
-    public function setUp()
+    protected function setUp(): void
     {
         ProcessBuilderFactory::$emulateSfLTS = null;
         if (null === static::$phpBinary) {
@@ -23,7 +24,7 @@ abstract class AbstractProcessBuilderFactoryTest extends \PHPUnit_Framework_Test
         }
     }
 
-    public static function setUpBeforeClass()
+    public static function setUpBeforeClass(): void
     {
         $finder = new ExecutableFinder();
         static::$phpBinary = $finder->find('php');
@@ -50,10 +51,10 @@ abstract class AbstractProcessBuilderFactoryTest extends \PHPUnit_Framework_Test
     }
 
     /**
-     * @expectedException Alchemy\BinaryDriver\Exception\InvalidArgumentException
      */
     public function testUseNonExistantBinary()
     {
+        $this->expectException('Alchemy\BinaryDriver\Exception\InvalidArgumentException');
         $factory = $this->getProcessBuilderFactory(static::$phpBinary);
         $factory->useBinary('itissureitdoesnotexist');
     }

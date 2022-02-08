@@ -11,6 +11,8 @@
 
 namespace Alchemy\BinaryDriver;
 
+use JetBrains\PhpStorm\Pure;
+
 class Configuration implements ConfigurationInterface
 {
     private $data;
@@ -23,7 +25,7 @@ class Configuration implements ConfigurationInterface
     /**
      * {@inheritdoc}
      */
-    public function getIterator()
+    public function getIterator(): \Traversable
     {
         return new \ArrayIterator($this->data);
     }
@@ -33,13 +35,13 @@ class Configuration implements ConfigurationInterface
      */
     public function get($key, $default = null)
     {
-        return isset($this->data[$key]) ? $this->data[$key] : $default;
+        return $this->data[$key] ?? $default;
     }
 
     /**
      * {@inheritdoc}
      */
-    public function set($key, $value)
+    public function set($key, $value): static
     {
         $this->data[$key] = $value;
 
@@ -49,7 +51,7 @@ class Configuration implements ConfigurationInterface
     /**
      * {@inheritdoc}
      */
-    public function has($key)
+    public function has($key): bool
     {
         return array_key_exists($key, $this->data);
     }
@@ -68,7 +70,7 @@ class Configuration implements ConfigurationInterface
     /**
      * {@inheritdoc}
      */
-    public function all()
+    public function all(): array
     {
         return $this->data;
     }
@@ -76,7 +78,7 @@ class Configuration implements ConfigurationInterface
     /**
      * {@inheritdoc}
      */
-    public function offsetExists($offset)
+    #[Pure] public function offsetExists($offset): bool
     {
         return $this->has($offset);
     }
@@ -84,7 +86,7 @@ class Configuration implements ConfigurationInterface
     /**
      * {@inheritdoc}
      */
-    public function offsetGet($offset)
+    public function offsetGet($offset): mixed
     {
         return $this->get($offset);
     }
@@ -92,7 +94,7 @@ class Configuration implements ConfigurationInterface
     /**
      * {@inheritdoc}
      */
-    public function offsetSet($offset, $value)
+    public function offsetSet($offset, $value): void
     {
         $this->set($offset, $value);
     }
@@ -100,7 +102,7 @@ class Configuration implements ConfigurationInterface
     /**
      * {@inheritdoc}
      */
-    public function offsetUnset($offset)
+    public function offsetUnset($offset): void
     {
         $this->remove($offset);
     }

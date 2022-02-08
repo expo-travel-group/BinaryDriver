@@ -30,7 +30,7 @@ class ProcessRunnerTest extends BinaryDriverTestCase
         $logger = $this->createLoggerMock();
         $runner = $this->getProcessRunner($logger);
 
-        $process = $this->createProcessMock(1, true, '--helloworld--', "Kikoo Romain", null, true);
+        $process = $this->createProcessMock(1, true, '--helloworld--', "Kikoo Romain", '', true);
 
         $logger
             ->expects($this->never())
@@ -47,7 +47,7 @@ class ProcessRunnerTest extends BinaryDriverTestCase
         $logger = $this->createLoggerMock();
         $runner = $this->getProcessRunner($logger);
 
-        $process = $this->createProcessMock(1, true, '--helloworld--', "Kikoo Romain", null, true);
+        $process = $this->createProcessMock(1, true, '--helloworld--', "Kikoo Romain", '', true);
 
         $logger
             ->expects($this->never())
@@ -64,7 +64,7 @@ class ProcessRunnerTest extends BinaryDriverTestCase
         $logger = $this->createLoggerMock();
         $runner = $this->getProcessRunner($logger);
 
-        $process = $this->createProcessMock(1, false, '--helloworld--', null, null, true);
+        $process = $this->createProcessMock(1, false, '--helloworld--', '', '', true);
 
         $logger
             ->expects($this->once())
@@ -114,7 +114,7 @@ class ProcessRunnerTest extends BinaryDriverTestCase
         $logger = $this->createLoggerMock();
         $runner = $this->getProcessRunner($logger);
 
-        $process = $this->createProcessMock(1, false, '--helloworld--', 'Hello output', null, true);
+        $process = $this->createProcessMock(1, false, '--helloworld--', 'Hello output', '', true);
 
         $logger
             ->expects($this->once())
@@ -156,13 +156,13 @@ class ProcessRunnerTest extends BinaryDriverTestCase
 
         $capturedCallback = null;
 
-        $process = $this->createProcessMock(1, true, '--helloworld--', "Kikoo Romain", null, true);
+        $process = $this->createProcessMock(1, true, '--helloworld--', "Kikoo Romain", '', true);
         $process->expects($this->once())
             ->method('run')
             ->with($this->isInstanceOf('Closure'))
-            ->will($this->returnCallback(function ($callback) use (&$capturedCallback) {
+            ->willReturnCallback(function ($callback) use (&$capturedCallback) {
                 $capturedCallback = $callback;
-            }));
+            });
 
         $logger
             ->expects($this->never())

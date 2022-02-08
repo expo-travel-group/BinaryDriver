@@ -1,4 +1,4 @@
-<?php
+<?php /** @noinspection PhpExpressionResultUnusedInspection */
 
 namespace Alchemy\Tests\BinaryDriver;
 
@@ -7,11 +7,18 @@ use Alchemy\BinaryDriver\BinaryDriverTestCase;
 use Alchemy\BinaryDriver\Configuration;
 use Alchemy\BinaryDriver\Exception\ExecutableNotFoundException;
 use Alchemy\BinaryDriver\Listeners\ListenerInterface;
+use PHPUnit\Framework\MockObject\MockObject;
 use Symfony\Component\Process\ExecutableFinder;
+use Alchemy\BinaryDriver\Listeners\Listeners;
+use Symfony\Component\Process\Process;
+use Alchemy\BinaryDriver\ProcessRunnerInterface;
+use Alchemy\BinaryDriver\ProcessBuilderFactoryInterface;
+use Alchemy\BinaryDriver\ConfigurationInterface;
+use Psr\Log\LoggerInterface;
 
 class AbstractBinaryTest extends BinaryDriverTestCase
 {
-    protected function getPhpBinary()
+    protected function getPhpBinary(): ?string
     {
         $finder = new ExecutableFinder();
         $php = $finder->find('php');
@@ -23,65 +30,65 @@ class AbstractBinaryTest extends BinaryDriverTestCase
         return $php;
     }
 
-    public function testSimpleLoadWithBinaryPath()
+    public function testSimpleLoadWithBinaryPath(): void
     {
         $php = $this->getPhpBinary();
         $imp = Implementation::load($php);
-        $this->assertInstanceOf('Alchemy\Tests\BinaryDriver\Implementation', $imp);
+        $this->assertInstanceOf(Implementation::class, $imp);
 
         $this->assertEquals($php, $imp->getProcessBuilderFactory()->getBinary());
     }
 
-    public function testMultipleLoadWithBinaryPath()
+    public function testMultipleLoadWithBinaryPath(): void
     {
         $php = $this->getPhpBinary();
         $imp = Implementation::load(array('/zz/path/to/unexisting/command', $php));
-        $this->assertInstanceOf('Alchemy\Tests\BinaryDriver\Implementation', $imp);
+        $this->assertInstanceOf(Implementation::class, $imp);
 
         $this->assertEquals($php, $imp->getProcessBuilderFactory()->getBinary());
     }
 
-    public function testSimpleLoadWithBinaryName()
+    public function testSimpleLoadWithBinaryName(): void
     {
         $php = $this->getPhpBinary();
         $imp = Implementation::load('php');
-        $this->assertInstanceOf('Alchemy\Tests\BinaryDriver\Implementation', $imp);
+        $this->assertInstanceOf(Implementation::class, $imp);
 
         $this->assertEquals($php, $imp->getProcessBuilderFactory()->getBinary());
     }
 
-    public function testMultipleLoadWithBinaryName()
+    public function testMultipleLoadWithBinaryName(): void
     {
         $php = $this->getPhpBinary();
         $imp = Implementation::load(array('bachibouzouk', 'php'));
-        $this->assertInstanceOf('Alchemy\Tests\BinaryDriver\Implementation', $imp);
+        $this->assertInstanceOf(Implementation::class, $imp);
 
         $this->assertEquals($php, $imp->getProcessBuilderFactory()->getBinary());
     }
 
-    public function testLoadWithMultiplePathExpectingAFailure()
+    public function testLoadWithMultiplePathExpectingAFailure(): void
     {
-        $this->setExpectedException(ExecutableNotFoundException::class);
+        $this->expectException(ExecutableNotFoundException::class);
 
         Implementation::load(array('bachibouzouk', 'moribon'));
     }
 
-    public function testLoadWithUniquePathExpectingAFailure()
+    public function testLoadWithUniquePathExpectingAFailure(): void
     {
-        $this->setExpectedException(ExecutableNotFoundException::class);
+        $this->expectException(ExecutableNotFoundException::class);
 
         Implementation::load('bachibouzouk');
     }
 
-    public function testLoadWithCustomLogger()
+    public function testLoadWithCustomLogger(): void
     {
-        $logger = $this->getMock('Psr\Log\LoggerInterface');
+        $logger = $this->createMock(LoggerInterface::class);
         $imp = Implementation::load('php', $logger);
 
         $this->assertEquals($logger, $imp->getProcessRunner()->getLogger());
     }
 
-    public function testLoadWithCustomConfigurationAsArray()
+    public function testLoadWithCustomConfigurationAsArray(): void
     {
         $conf = array('timeout' => 200);
         $imp = Implementation::load('php', null, $conf);
@@ -89,50 +96,50 @@ class AbstractBinaryTest extends BinaryDriverTestCase
         $this->assertEquals($conf, $imp->getConfiguration()->all());
     }
 
-    public function testLoadWithCustomConfigurationAsObject()
+    public function testLoadWithCustomConfigurationAsObject(): void
     {
-        $conf = $this->getMock('Alchemy\BinaryDriver\ConfigurationInterface');
+        $conf = $this->createMock(ConfigurationInterface::class);
         $imp = Implementation::load('php', null, $conf);
 
         $this->assertEquals($conf, $imp->getConfiguration());
     }
 
-    public function testProcessBuilderFactoryGetterAndSetters()
+    public function testProcessBuilderFactoryGetterAndSetters(): void
     {
         $imp = Implementation::load('php');
-        $factory = $this->getMock('Alchemy\BinaryDriver\ProcessBuilderFactoryInterface');
+        $factory = $this->createMock(ProcessBuilderFactoryInterface::class);
 
         $imp->setProcessBuilderFactory($factory);
         $this->assertEquals($factory, $imp->getProcessBuilderFactory());
     }
 
-    public function testConfigurationGetterAndSetters()
+    public function testConfigurationGetterAndSetters(): void
     {
         $imp = Implementation::load('php');
-        $conf = $this->getMock('Alchemy\BinaryDriver\ConfigurationInterface');
+        $conf = $this->createMock(ConfigurationInterface::class);
 
         $imp->setConfiguration($conf);
         $this->assertEquals($conf, $imp->getConfiguration());
     }
 
-    public function testTimeoutIsSetOnConstruction()
+    public function testTimeoutIsSetOnConstruction(): void
     {
         $imp = Implementation::load('php', null, array('timeout' => 42));
         $this->assertEquals(42, $imp->getProcessBuilderFactory()->getTimeout());
     }
 
-    public function testTimeoutIsSetOnConfigurationSetting()
+    public function testTimeoutIsSetOnConfigurationSetting(): void
     {
         $imp = Implementation::load('php', null);
         $imp->setConfiguration(new Configuration(array('timeout' => 42)));
         $this->assertEquals(42, $imp->getProcessBuilderFactory()->getTimeout());
     }
 
-    public function testTimeoutIsSetOnProcessBuilderSetting()
+    public function testTimeoutIsSetOnProcessBuilderSetting(): void
     {
         $imp = Implementation::load('php', null, array('timeout' => 42));
 
-        $factory = $this->getMock('Alchemy\BinaryDriver\ProcessBuilderFactoryInterface');
+        $factory = $this->createMock(ProcessBuilderFactoryInterface::class);
         $factory->expects($this->once())
             ->method('setTimeout')
             ->with(42);
@@ -140,21 +147,21 @@ class AbstractBinaryTest extends BinaryDriverTestCase
         $imp->setProcessBuilderFactory($factory);
     }
 
-    public function testListenRegistersAListener()
+    public function testListenRegistersAListener(): void
     {
         $imp = Implementation::load('php');
 
-        $listeners = $this->getMockBuilder('Alchemy\BinaryDriver\Listeners\Listeners')
+        $listeners = $this->getMockBuilder(Listeners::class)
             ->disableOriginalConstructor()
             ->getMock();
 
-        $listener = $this->getMock('Alchemy\BinaryDriver\Listeners\ListenerInterface');
+        $listener = $this->createMock(ListenerInterface::class);
 
         $listeners->expects($this->once())
             ->method('register')
             ->with($this->equalTo($listener), $this->equalTo($imp));
 
-        $reflexion = new \ReflectionClass('Alchemy\BinaryDriver\AbstractBinary');
+        $reflexion = new \ReflectionClass(AbstractBinary::class);
         $prop = $reflexion->getProperty('listenersManager');
         $prop->setAccessible(true);
         $prop->setValue($imp, $listeners);
@@ -165,25 +172,25 @@ class AbstractBinaryTest extends BinaryDriverTestCase
     /**
      * @dataProvider provideCommandParameters
      */
-    public function testCommandRunsAProcess($parameters, $bypassErrors, $expectedParameters, $output)
+    public function testCommandRunsAProcess($parameters, $bypassErrors, $expectedParameters, $output): void
     {
         $imp = Implementation::load('php');
-        $factory = $this->getMock('Alchemy\BinaryDriver\ProcessBuilderFactoryInterface');
-        $processRunner = $this->getMock('Alchemy\BinaryDriver\ProcessRunnerInterface');
+        $factory = $this->createMock(ProcessBuilderFactoryInterface::class);
+        $processRunner = $this->createMock(ProcessRunnerInterface::class);
 
-        $process = $this->getMockBuilder('Symfony\Component\Process\Process')
+        $process = $this->getMockBuilder(Process::class)
             ->disableOriginalConstructor()
             ->getMock();
 
         $processRunner->expects($this->once())
             ->method('run')
             ->with($this->equalTo($process), $this->isInstanceOf('SplObjectStorage'), $this->equalTo($bypassErrors))
-            ->will($this->returnValue($output));
+            ->willReturn($output);
 
         $factory->expects($this->once())
             ->method('create')
             ->with($expectedParameters)
-            ->will($this->returnValue($process));
+            ->willReturn($process);
 
         $imp->setProcessBuilderFactory($factory);
         $imp->setProcessRunner($processRunner);
@@ -194,13 +201,13 @@ class AbstractBinaryTest extends BinaryDriverTestCase
     /**
      * @dataProvider provideCommandWithListenersParameters
      */
-    public function testCommandWithTemporaryListeners($parameters, $bypassErrors, $expectedParameters, $output, $count, $listeners)
+    public function testCommandWithTemporaryListeners($parameters, $bypassErrors, $expectedParameters, $output, $count, $listeners): void
     {
         $imp = Implementation::load('php');
-        $factory = $this->getMock('Alchemy\BinaryDriver\ProcessBuilderFactoryInterface');
-        $processRunner = $this->getMock('Alchemy\BinaryDriver\ProcessRunnerInterface');
+        $factory = $this->createMock(ProcessBuilderFactoryInterface::class);
+        $processRunner = $this->createMock(ProcessRunnerInterface::class);
 
-        $process = $this->getMockBuilder('Symfony\Component\Process\Process')
+        $process = $this->getMockBuilder(Process::class)
             ->disableOriginalConstructor()
             ->getMock();
 
@@ -209,7 +216,7 @@ class AbstractBinaryTest extends BinaryDriverTestCase
         $processRunner->expects($this->exactly(2))
             ->method('run')
             ->with($this->equalTo($process), $this->isInstanceOf('SplObjectStorage'), $this->equalTo($bypassErrors))
-            ->will($this->returnCallback(function ($process, $storage, $errors) use ($output, &$firstStorage, &$secondStorage) {
+            ->willReturnCallback(function ($process, $storage, $errors) use ($output, &$firstStorage, &$secondStorage) {
                 if (null === $firstStorage) {
                     $firstStorage = $storage;
                 } else {
@@ -217,12 +224,12 @@ class AbstractBinaryTest extends BinaryDriverTestCase
                 }
 
                 return $output;
-            }));
+            });
 
         $factory->expects($this->exactly(2))
             ->method('create')
             ->with($expectedParameters)
-            ->will($this->returnValue($process));
+            ->willReturn($process);
 
         $imp->setProcessBuilderFactory($factory);
         $imp->setProcessRunner($processRunner);
@@ -233,7 +240,7 @@ class AbstractBinaryTest extends BinaryDriverTestCase
         $this->assertCount(0, $secondStorage);
     }
 
-    public function provideCommandWithListenersParameters()
+    public function provideCommandWithListenersParameters(): array
     {
         return array(
             array('-a', false, array('-a'), 'loubda', 2, array($this->getMockListener(), $this->getMockListener())),
@@ -243,7 +250,7 @@ class AbstractBinaryTest extends BinaryDriverTestCase
         );
     }
 
-    public function provideCommandParameters()
+    public function provideCommandParameters(): array
     {
         return array(
             array('-a', false, array('-a'), 'loubda'),
@@ -255,21 +262,21 @@ class AbstractBinaryTest extends BinaryDriverTestCase
         );
     }
 
-    public function testUnlistenUnregistersAListener()
+    public function testUnlistenUnregistersAListener(): void
     {
         $imp = Implementation::load('php');
 
-        $listeners = $this->getMockBuilder('Alchemy\BinaryDriver\Listeners\Listeners')
+        $listeners = $this->getMockBuilder(Listeners::class)
             ->disableOriginalConstructor()
             ->getMock();
 
-        $listener = $this->getMock('Alchemy\BinaryDriver\Listeners\ListenerInterface');
+        $listener = $this->createMock(ListenerInterface::class);
 
         $listeners->expects($this->once())
             ->method('unregister')
             ->with($this->equalTo($listener), $this->equalTo($imp));
 
-        $reflexion = new \ReflectionClass('Alchemy\BinaryDriver\AbstractBinary');
+        $reflexion = new \ReflectionClass(AbstractBinary::class);
         $prop = $reflexion->getProperty('listenersManager');
         $prop->setAccessible(true);
         $prop->setValue($imp, $listeners);
@@ -278,12 +285,11 @@ class AbstractBinaryTest extends BinaryDriverTestCase
     }
 
     /**
-     * @return \PHPUnit_Framework_MockObject_MockObject
      */
-    private function getMockListener()
+    private function getMockListener(): MockObject
     {
-        $listener = $this->getMock(ListenerInterface::class);
-        $listener->expects($this->any())
+        $listener = $this->createMock(ListenerInterface::class);
+        $listener
             ->method('forwardedEvents')
             ->willReturn(array());
 
@@ -293,7 +299,7 @@ class AbstractBinaryTest extends BinaryDriverTestCase
 
 class Implementation extends AbstractBinary
 {
-    public function getName()
+    public function getName(): string
     {
         return 'Implementation';
     }
